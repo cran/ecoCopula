@@ -6,14 +6,15 @@
 #' @param sp.col species name colour (default is blue), vector of length equal to the number of sites (if arrow=TRUE)
 #' @param alpha scaling factor for ratio of scores to loadings (default is 0.7)
 #' @param arrow should arrows be plotted for species loadings (default is TRUE)
-#' @param site.text should sites be labeled by rown names of data (default is FALSE, points are drawn)
+#' @param site.text should sites be labeled by row names of data (default is FALSE, points are drawn)
 #' @param labels the labels for sites and species (for biplots only) (default is data labels)
 #' @param ...	other parameters to be passed through to plotting functions. 
 #' @return an ordination plot.
 #' @importFrom grDevices devAskNewPage
+#' @export plot.cord
 #' @export
 #' @examples
-#' X <- as.data.frame(spider$x)
+#' X <- spider$x
 #' abund <- spider$abund
 #' spider_mod <- stackedsdm(abund,~1, data = X, ncores=2) 
 #' spid_lv=cord(spider_mod)
@@ -84,11 +85,11 @@ plot.cord <- function(x, biplot = FALSE,site.col="black",sp.col="blue",
 #' @param x is a cord object, e.g. from output of \code{\link{cord}}.
 #' @param ... not used
 #' @seealso \code{\link{cord}}
+#' @export print.cord
 #' @export
 #' @examples
-#' X <- as.data.frame(spider$x)
 #' abund <- spider$abund
-#' spider_mod <- stackedsdm(abund,~1, data = X, ncores=2) 
+#' spider_mod <- stackedsdm(abund,~1, data = spider$x, ncores=2) 
 #' spid_lv=cord(spider_mod)
 #' print(spid_lv)
 print.cord = function (x, ...) 
@@ -108,11 +109,11 @@ print.cord = function (x, ...)
 #' @param object is a cord object, e.g. from output of \code{\link{cgr}}.
 #' @param ... not used
 #' @seealso \code{\link{cord}}
+#' @export summary.cord
 #' @export
 #' @examples
-#' X <- as.data.frame(spider$x)
 #' abund <- spider$abund[,1:5]
-#' spider_mod <- stackedsdm(abund,~1, data = X, ncores=2) 
+#' spider_mod <- stackedsdm(abund,~1, data = spider$x, ncores=2) 
 #' spid_lv=cord(spider_mod)
 #' summary(spid_lv)
 summary.cord = function (object, ...) 
@@ -139,9 +140,8 @@ summary.cord = function (object, ...)
 #' Defaults to the X covariates in the fitted model.
 #' @examples
 #' abund = spider$abund
-#' X = data.frame(spider$x)
 #'
-#' spider_mod_ssdm = stackedsdm(abund,~1, data = X, ncores=2)
+#' spider_mod_ssdm = stackedsdm(abund,~1, data = spider$x, ncores=2)
 #' spid_lv_ssdm = cord(spider_mod_ssdm)
 #' simulate(spid_lv_ssdm, nsim=2)
 #' 
@@ -153,17 +153,18 @@ summary.cord = function (object, ...)
 #' spid_lv = cord(spider_mod)
 #' simulate(spid_lv)
 #'
-#' spider_mod_X = manyglm(abund ~ soil.dry + bare.sand, data=X)
+#' spider_mod_X = manyglm(abund ~ soil.dry + bare.sand, data=spider$x)
 #' spid_lv_X = cord(spider_mod_X)
-#' Xnew = X[1:10,]
+#' Xnew = spider$x[1:10,]
 #' simulate(spid_lv_X, newdata = Xnew)
 #' simulate(spid_lv_X, nsim=2, newdata = Xnew)
 #'
-#' spider_mod_X_ssdm = stackedsdm(abund, formula_X = ~. -bare.sand, data = X, ncores=2)
+#' spider_mod_X_ssdm = stackedsdm(abund, formula_X = ~. -bare.sand, data = spider$x, ncores=2)
 #' spid_lv_X_ssdm = cord(spider_mod_X_ssdm)
 #' simulate(spid_lv_X_ssdm, newdata = Xnew)
 #' }
 #' @importFrom stats simulate
+#' @export simulate.cord
 #' @export
 simulate.cord = function(object, nsim=1, seed=NULL, newdata=object$obj$data, ...) {
   
@@ -181,9 +182,7 @@ simulate.cord = function(object, nsim=1, seed=NULL, newdata=object$obj$data, ...
   
   check_object_family(object)
   newdata = reshape_newdata(object, nsim, newdata)
-  prs = suppressWarnings(
-    predict(object$obj, type = "response", newdata = newdata)
-  ) # warning for family=poisson suppressed
+  prs = predict_responses(object, newdata)
   newY = simulate_newY(object, prs)
   
   return (newY)
@@ -211,9 +210,9 @@ simulate_newY = function(object, prs) {
       if (all(object$obj$family == "negative.binomial")) {
         size = get_size(object)
         newY[,iVar] = qnbinom(pnorm(sim[,iVar]), size = size[iVar], mu = prs[,iVar])
-      } else if (object$obj$call$family == "poisson") {
+      } else if (any(substr(object$obj$call$family, 1, 7) == "poisson")) {
         newY[,iVar] = qpois(pnorm(sim[,iVar]), lambda = prs[,iVar])
-      } else if (object$obj$call$family == "binomial") {
+      } else if (any(substr(object$obj$call$family, 1, 8) == "binomial")) {
         newY[,iVar] = qbinom(pnorm(sim[,iVar]), size = 1, prob = prs[,iVar])
       } else {
         stop("'family'", object$obj$family, "not recognized")

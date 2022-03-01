@@ -29,7 +29,7 @@
 
 \item{arrow}{should arrows be plotted for species loadings (default is TRUE)}
 
-\item{site.text}{should sites be labeled by rown names of data (default is FALSE, points are drawn)}
+\item{site.text}{should sites be labeled by row names of data (default is FALSE, points are drawn)}
 
 \item{labels}{the labels for sites and species (for biplots only) (default is data labels)}
 
@@ -42,7 +42,7 @@ an ordination plot.
 Plots an ordination of latent variables and their corresponding coefficients (biplot).
 }
 \examples{
-X <- as.data.frame(spider$x)
+X <- spider$x
 abund <- spider$abund
 spider_mod <- stackedsdm(abund,~1, data = X, ncores=2) 
 spid_lv=cord(spider_mod)

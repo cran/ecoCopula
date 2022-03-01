@@ -7,11 +7,12 @@
 #' @return A matrix of fitted values.
 #' @section Author(s):
 #' Francis K.C. Hui <francis.hui@anu.edu.au>.
+#' @export fitted.stackedsdm
 #' @export 
 #' @examples
 #' library(mvabund)
 #' data(spider)
-#' X <- as.data.frame(spider$x)
+#' X <- spider$x
 #' abund <- spider$abund
 #'
 #' # Example 1: Simple example
@@ -35,10 +36,10 @@ fitted.stackedsdm <- function(object, ...) {
 #' Predictions from a stackedsdm object
 #'
 #' @param object An object of class \code{stackedsdm}
-#' @param newdata Pptionally, a data frame in which to look for variables with which to predict.  If omitted, the covariates from the existing dataset are used.
-#' @param type The type of prediction required.  This can be supplied as either a single character string, when is applied to all species, or a vector of character strings of the same length as \code{ncol(object$y)} specifying the type of predictions desired for each species. The exact type of prediction allowed depends precisely on the distribution, but for many there is at least `"link"' which is on the scale of the linear predictors, and ‘"response"’ which is on the scale of the response variable. The values of this argument can be abbreviated.
+#' @param newdata Optionally, a data frame in which to look for variables with which to predict.  If omitted, the covariates from the existing dataset are used.
+#' @param type The type of prediction required.  This can be supplied as either a single character string, when is applied to all species, or a vector of character strings of the same length as \code{ncol(object$y)} specifying the type of predictions desired for each species. The exact type of prediction allowed depends precisely on the distribution, but for many there is at least \code{"link"} which is on the scale of the linear predictors, and \code{"response"} which is on the scale of the response variable. The values of this argument can be abbreviated.
 #' @param se.fit Logical switch indicating if standard errors are required.
-#' @param na.action Function determining what should be done with missing values in '"newdata"'. The default is to predict \code{NA}..
+#' @param na.action Function determining what should be done with missing values in \code{newdata}. The default is to predict \code{NA}..
 #' @param ... not used
 #' @section Details:
 #'  This function simply applies a for loop, cycling through each fitted model from the \code{stackedsdm} object and then attempting to construct the relevant predictions by applying the relevant \code{predict} method. Please keep in mind no formatting is done to the predictions.
@@ -47,7 +48,7 @@ fitted.stackedsdm <- function(object, ...) {
 #' Francis K.C. Hui <francis.hui@anu.edu.au>.
 #' @importFrom stats na.pass
 #' @examples
-#' X <- as.data.frame(spider$x)
+#' X <- spider$x
 #' abund <- spider$abund
 #'
 #' # Example 1: Simple example
@@ -66,6 +67,7 @@ fitted.stackedsdm <- function(object, ...) {
 #' fit0 <- stackedsdm(abund, formula_X = ~ bare.sand, data = X, family = myfamily, ncores=2)
 #' predict(fit0, type = "response")
 #'}
+#' @export predict.stackedsdm
 #' @export 
 predict.stackedsdm <- function(object, newdata = NULL, type = "link", se.fit = FALSE, na.action = na.pass, ...) {
   num_spp <- length(object$family)
@@ -115,11 +117,12 @@ predict.stackedsdm <- function(object, newdata = NULL, type = "link", se.fit = F
 #' @return A matrix of residuals
 #' @section Author(s):
 #' Francis K.C. Hui <francis.hui@anu.edu.au>.
+#' @export residuals.stackedsdm
 #' @export 
 #' @import stats
 #' @importFrom tweedie ptweedie  
 #' @examples
-#' X <- as.data.frame(spider$x)
+#' X <- spider$x
 #' abund <- spider$abund
 #'
 #' # Example 1: Simple example
@@ -229,11 +232,11 @@ residuals.stackedsdm <- function(object, type = "dunnsmyth", seed = NULL, ...) {
 #'
 #' @param x is a stackedsdm object.
 #' @param ... not used
+#' @export plot.stackedsdm
 #' @export
 #' @examples
-#' X <- as.data.frame(spider$x)
 #' abund <- spider$abund
-#' spider_mod <- stackedsdm(abund,~1, data = X) 
+#' spider_mod <- stackedsdm(abund,~1, data = spider$x) 
 #' plot(spider_mod)
 plot.stackedsdm = function(x,...) {
   scatter.smooth(residuals(x)~fitted(x),
